@@ -35,9 +35,10 @@ void Enemy::Update()
 	if (!stop) {
 		Point op = pos_;
 		Point move = { nDir[forward_].x, nDir[forward_].y };
-		Rect eRect = { pos_.x, pos_.y,CHA_WIDTH, CHA_HEIGHT };
+		Rect eRect = { pos_.x, pos_.y, CHA_WIDTH, CHA_HEIGHT };
 		Stage* stage = (Stage*)FindGameObject<Stage>();
 		pos_ = { pos_.x + move.x, pos_.y + move.y };
+
 		for (auto& obj : stage->GetStageRects())
 		{
 			if (CheckHit(eRect, obj)) {
@@ -56,22 +57,21 @@ void Enemy::Update()
 					pos_ = op;
 				}
 				//forward_ = (DIR)(GetRand(3));
-				RightHandMove();
+				RightHandMove(); // 右手法を適用
 				break;
 			}
 		}
 	}
+
+	// ランダムで移動方向を決める
 	int prgssx = pos_.x % (CHA_WIDTH);
 	int prgssy = pos_.y % (CHA_HEIGHT);
-	int cx = (pos_.x / (CHA_WIDTH))%2;
-	int cy = (pos_.y / (CHA_HEIGHT))%2;
+	int cx = (pos_.x / (CHA_WIDTH)) % 2;
+	int cy = (pos_.y / (CHA_HEIGHT)) % 2;
 	if (prgssx == 0 && prgssy == 0 && cx && cy)
 	{
-		//forward_ = (DIR)(GetRand(3));
-		//ここに動きのパターンを入れる
-		//YCloserMove();
-		//XYCloserMoveRandom();
-		RightHandMove();
+		// ランダムに移動
+		RandomMove();
 	}
 
 }
@@ -118,7 +118,7 @@ void Enemy::XYCloserMove()
 			forward_ = RIGHT;
 		}
 	}
-	else 
+	else
 	{
 		if (pos_.y > player->GetPos().y)
 		{
@@ -133,18 +133,23 @@ void Enemy::XYCloserMove()
 
 void Enemy::XYCloserMoveRandom()
 {
-
-	//３分の1の確率でプレイヤーに近い方に行く、残りの3分の1はランダム方向に移動、残りは何もしない
+	// ３分の1の確率でプレイヤーに近い方に行く、残りの3分の1はランダム方向に移動、残りは何もしない
 	Player* player = (Player*)FindGameObject<Player>();
 	int xdis = abs(pos_.x - player->GetPos().x);
 	int ydis = abs(pos_.y - player->GetPos().y);
-	int rnum = GetRand(2);
+	int rnum = GetRand(3); // 0, 1, 2 のランダム数
 	if (rnum == 0)
 		XYCloserMove();
 	else if (rnum == 1)
 	{
-		forward_ = (DIR)GetRand(3);
+		forward_ = (DIR)GetRand(4); // ランダムな方向に移動
 	}
+}
+
+void Enemy::RandomMove()
+{
+	// 完全ランダムで移動する場合、4つの方向から選ぶ
+	forward_ = (DIR)GetRand(4); // 0:上, 1:下, 2:左, 3:右
 }
 
 void Enemy::RightHandMove()
@@ -185,19 +190,18 @@ void Enemy::RightHandMove()
 	}
 }
 
-
 void Enemy::Draw()
 {
-	DrawBox(pos_.x, pos_.y, pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT, 
+	DrawBox(pos_.x, pos_.y, pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT,
 		GetColor(80, 89, 10), TRUE);
 	Point tp[4][3] = {
 		{{pos_.x + CHA_WIDTH / 2, pos_.y}, {pos_.x, pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT / 2}},
 		{{pos_.x + CHA_WIDTH / 2, pos_.y + CHA_HEIGHT}, {pos_.x, pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT / 2}},
-		{{pos_.x            , pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH / 2, pos_.y}, {pos_.x + CHA_WIDTH/2, pos_.y  + CHA_HEIGHT}},
-		{{pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH / 2, pos_.y}, {pos_.x + CHA_WIDTH/2, pos_.y + CHA_HEIGHT}}
-					};
+		{{pos_.x            , pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH / 2, pos_.y}, {pos_.x + CHA_WIDTH / 2, pos_.y + CHA_HEIGHT}},
+		{{pos_.x + CHA_WIDTH, pos_.y + CHA_HEIGHT / 2}, {pos_.x + CHA_WIDTH / 2, pos_.y}, {pos_.x + CHA_WIDTH / 2, pos_.y + CHA_HEIGHT}}
+	};
 
-	DrawTriangle(tp[forward_][0].x, tp[forward_][0].y, tp[forward_][1].x, tp[forward_][1].y, tp[forward_][2].x, tp[forward_][2].y, GetColor(255,255,255), TRUE);
+	DrawTriangle(tp[forward_][0].x, tp[forward_][0].y, tp[forward_][1].x, tp[forward_][1].y, tp[forward_][2].x, tp[forward_][2].y, GetColor(255, 255, 255), TRUE);
 }
 
 bool Enemy::CheckHit(const Rect& me, const Rect& other)
@@ -211,5 +215,3 @@ bool Enemy::CheckHit(const Rect& me, const Rect& other)
 	}
 	return false;
 }
-
-
